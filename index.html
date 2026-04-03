@@ -829,6 +829,15 @@ body {
   </div>
 </div>
 
+<!-- ── SAVE PREVIEW MODAL ── -->
+<div class="share-overlay" id="save-preview-overlay" onclick="closeSavePreview(event)">
+  <div class="share-sheet" style="text-align:center; padding-top:20px;">
+    <div class="share-sheet-title">長按圖片即可儲存</div>
+    <img id="save-preview-img" src="" style="width:100%; max-width:340px; margin:16px auto; border-radius:8px; display:block;">
+    <button class="share-cancel" onclick="closeSavePreview()">關閉</button>
+  </div>
+</div>
+
 <!-- ── SAVE CARD（截圖用，螢幕上不顯示）── -->
 <div id="save-card">
   <div class="save-card-eyebrow">花束人格測驗</div>
@@ -1300,13 +1309,6 @@ async function saveCard() {
   document.getElementById('sc-strength').textContent = document.getElementById('r-strength').textContent;
   document.getElementById('sc-blind').textContent    = document.getElementById('r-blind').textContent;
 
-  // iOS Safari 會擋 async 後的 window.open，必須在 await 前同步開好
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  let newTab = null;
-  if (isIOS) {
-    newTab = window.open('about:blank');
-  }
-
   // 暫時移到畫面內讓 html2canvas 拍得到
   const card = document.getElementById('save-card');
   card.style.left = '-375px'; // 螢幕外但不是 display:none
@@ -1318,17 +1320,12 @@ async function saveCard() {
       backgroundColor: '#faf7f2',
     });
 
-    if (isIOS) {
-      // iOS: 在預先開好的分頁中顯示圖片，使用者長按儲存
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      // 手機（含 LINE 瀏覽器）：頁內 modal 顯示圖片，使用者長按儲存
       const imgData = canvas.toDataURL('image/png');
-      if (newTab) {
-        newTab.document.write(
-          `<html><head><title>花束人格_${name}</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
-          `<body style="margin:0;display:flex;justify-content:center;background:#faf7f2">` +
-          `<img src="${imgData}" style="width:100%;max-width:375px"></body></html>`
-        );
-        newTab.document.close();
-      }
+      document.getElementById('save-preview-img').src = imgData;
+      document.getElementById('save-preview-overlay').classList.add('open');
     } else {
       canvas.toBlob(function(blob) {
         const url = URL.createObjectURL(blob);
@@ -1344,11 +1341,15 @@ async function saveCard() {
 
     gtag('event', 'save_card', { event_category: 'quiz', result_name: name });
   } catch(e) {
-    if (newTab) newTab.close();
     alert('截圖失敗，請手動截圖儲存 🌸');
   }
 
   card.style.left = '-9999px';
+}
+
+function closeSavePreview(e) {
+  if (e && e.target !== document.getElementById('save-preview-overlay')) return;
+  document.getElementById('save-preview-overlay').classList.remove('open');
 }
 const bgm      = document.getElementById('bgm');
 const audioBtn = document.getElementById('audio-btn');
