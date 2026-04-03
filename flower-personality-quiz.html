@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是哪種花束？</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=LXGW+WenKai+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F2F0EC;
+  --surface: #FAFAF8;
+  --ink: #404E3B;
+  --ink-light: #6C8480;
+  --line: rgba(64,78,59,0.12);
+  --sage: #7B9669;
+  --sage-light: #BAC8B1;
+  --grey: #E6E6E6;
+  --grey-mid: #6C8480;
+
+  /* accent per bouquet — kept subtle within the palette */
+  --accent-rose:      #7B9669;
+  --accent-sage:      #6C8480;
+  --accent-gold:      #7B9669;
+  --accent-lavender:  #6C8480;
+  --accent-poppy:     #7B9669;
+  --accent-herb:      #404E3B;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'LXGW WenKai TC', cursive;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+/* ── botanical deco lines ── */
+.deco-line {
+  display: block; width: 1px;
+  background: var(--line);
+  position: fixed; top: 0; bottom: 0;
+}
+.deco-line.left { left: 48px; }
+.deco-line.right { right: 48px; }
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+  position: relative; z-index: 1;
+}
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 56px;
+  animation: fadeUp 1s ease both;
+}
+.header-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.header-eyebrow::before, .header-eyebrow::after {
+  content: ''; display: block; width: 32px; height: 1px; background: var(--ink-light); opacity: 0.4;
+}
+.header h1 {
+  font-family: 'LXGW WenKai TC', 'Cormorant Garamond', cursive;
+  font-size: clamp(2.6rem, 8vw, 4rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.header h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--sage);
+}
+.header-sub {
+  font-size: 0.88rem;
+  color: var(--ink-light);
+  line-height: 1.9;
+  font-weight: 300;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+/* ── START CARD ── */
+.start-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 48px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 1s 0.2s ease both;
+}
+/* corner marks */
+.start-card::before, .start-card::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: rgba(100,88,75,0.25);
+  border-style: solid;
+}
+.start-card::before { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+.start-card::after  { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+
+.start-flower-icon {
+  font-size: 3.6rem;
+  display: block;
+  margin-bottom: 24px;
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.start-card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.start-card p {
+  font-size: 0.86rem;
+  color: var(--ink-light);
+  line-height: 1.9;
+  font-weight: 300;
+  margin-bottom: 8px;
+}
+.quiz-meta {
+  display: flex; justify-content: center; gap: 10px;
+  margin: 24px 0; flex-wrap: wrap;
+}
+.meta-tag {
+  border: 1px solid var(--line);
+  padding: 5px 14px; border-radius: 99px;
+  font-size: 0.73rem; color: var(--ink-light);
+  letter-spacing: 0.5px;
+}
+
+/* ── BUTTONS ── */
+.btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  padding: 14px 44px;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+.btn-primary:hover { background: #3a3026; transform: translateY(-1px); }
+
+/* ── QUIZ ── */
+#quiz-screen { display: none; }
+
+.progress-wrap {
+  margin-bottom: 36px;
+  display: flex; align-items: center; gap: 14px;
+}
+.progress-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.82rem;
+  color: var(--ink-light);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  min-width: 52px;
+}
+.progress-track {
+  flex: 1; height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.progress-fill {
+  position: absolute; left: 0; top: 0; height: 100%;
+  background: var(--sage);
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.progress-dot {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--sage);
+  transition: left 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.45s ease both;
+}
+.question-card::before, .question-card::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: rgba(100,88,75,0.2);
+  border-style: solid;
+}
+.question-card::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
+.question-card::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
+
+@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+.q-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.72rem;
+  color: var(--ink-light);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.q-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 28px;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.opt-btn {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 14px 18px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.6;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.opt-letter {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  opacity: 0.45;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.opt-btn:hover { background: var(--sage-light); border-color: var(--sage); }
+.opt-btn.chosen { background: var(--sage); color: #fff; border-color: var(--sage); }
+.opt-btn.chosen .opt-letter { opacity: 0.8; }
+.opt-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+/* ── RESULT ── */
+#result-screen { display: none; }
+
+.result-reveal {
+  animation: fadeUp 0.8s ease both;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.result-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+}
+.result-eyebrow::before, .result-eyebrow::after {
+  content: ''; display: block; width: 24px; height: 1px; background: currentColor; opacity: 0.4;
+}
+
+.result-flower-icon {
+  display: block;
+  margin: 0 auto 20px;
+  animation: bloom 1s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.result-flower-icon img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+@keyframes bloom { from{transform:scale(0.4) rotate(-15deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+
+.result-flower-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 300;
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.1;
+}
+.result-flower-latin {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+}
+.result-tagline {
+  font-size: 0.82rem;
+  color: var(--ink-light);
+  letter-spacing: 1px;
+}
+
+/* accent bar per flower type */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 36px 36px 32px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  animation: fadeUp 0.8s 0.2s ease both;
+}
+.result-card::before, .result-card::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border-style: solid;
+}
+.result-card::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
+.result-card::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
+.result-card.cascade::before,  .result-card.cascade::after  { border-color: rgba(64,78,59,0.3); }
+.result-card.tulip::before,    .result-card.tulip::after    { border-color: rgba(123,150,105,0.3); }
+.result-card.editorial::before,.result-card.editorial::after{ border-color: rgba(108,132,128,0.3); }
+.result-card.poppy::before,    .result-card.poppy::after    { border-color: rgba(186,200,177,0.4); }
+.result-card.wild::before,     .result-card.wild::after     { border-color: rgba(123,150,105,0.3); }
+.result-card.rose::before,     .result-card.rose::after     { border-color: rgba(64,78,59,0.3); }
+.result-card.market::before,   .result-card.market::after   { border-color: rgba(123,150,105,0.3); }
+
+.result-accent-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.cascade .result-accent-bar  { background: var(--ink); }
+.tulip .result-accent-bar    { background: var(--sage); }
+.editorial .result-accent-bar{ background: var(--grey-mid); }
+.poppy .result-accent-bar    { background: var(--sage-light); }
+.wild .result-accent-bar     { background: var(--sage); }
+.rose .result-accent-bar     { background: var(--ink); }
+.market .result-accent-bar   { background: var(--sage); }
+
+.traits-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 20px;
+}
+.trait-tag {
+  border: 1px solid var(--line);
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 0.72rem; color: var(--ink-light);
+  letter-spacing: 0.5px;
+}
+
+.result-desc {
+  font-size: 0.9rem;
+  color: var(--ink);
+  line-height: 2;
+  font-weight: 300;
+  margin-bottom: 0;
+}
+.result-desc strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.result-detail-section {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.detail-row {
+  display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px;
+  font-size: 0.9rem; line-height: 2;
+}
+.detail-label {
+  color: var(--ink-light);
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.detail-value { color: var(--ink); font-weight: 300; }
+
+/* compatibility cards */
+.compat-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+}
+.compat-card {
+  border-radius: 6px;
+  padding: 20px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.compat-card-good {
+  background: rgba(123,150,105,0.08);
+  border: 1px solid rgba(123,150,105,0.2);
+}
+.compat-card-hard {
+  background: rgba(108,132,128,0.08);
+  border: 1px solid rgba(108,132,128,0.2);
+}
+.compat-label {
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+.compat-card-good .compat-label { color: var(--sage); }
+.compat-card-hard .compat-label { color: var(--grey-mid); }
+.compat-flower-name {
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.compat-flower-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0;
+  overflow: hidden;
+}
+.compat-flower-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.compat-note {
+  font-size: 0.75rem;
+  color: var(--ink-light);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.result-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 20px; justify-content: center;
+  animation: fadeUp 0.6s 0.5s ease both;
+}
+.btn-retry {
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 11px 20px;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.82rem; letter-spacing: 1.5px;
+  cursor: pointer; border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-retry:hover { background: var(--ink); color: var(--bg); }
+.btn-save {
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 11px 20px;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.82rem; letter-spacing: 1.5px;
+  cursor: pointer; border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-save:hover { background: var(--ink); color: var(--bg); }
+.btn-share {
+  background: var(--sage);
+  color: #fff;
+  border: none;
+  padding: 11px 20px;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.82rem; letter-spacing: 1.5px;
+  cursor: pointer; border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-share:hover { background: var(--ink); }
+
+/* ── SHARE MODAL ── */
+.share-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(30,26,21,0.5);
+  z-index: 600;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease both;
+}
+.share-overlay.open { display: flex; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.share-sheet {
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 28px 24px 40px;
+  width: 100%; max-width: 600px;
+  animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+.share-sheet-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 400;
+  color: var(--ink); text-align: center;
+  margin-bottom: 24px;
+}
+.share-options {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+.share-opt {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 7px;
+  background: none; border: none;
+  cursor: pointer; padding: 8px 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.share-opt:hover { background: var(--line); }
+.share-opt-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  border: 1px solid var(--line);
+  background: white;
+}
+.share-opt-label {
+  font-size: 0.68rem; color: var(--ink-light);
+  letter-spacing: 0.5px;
+}
+.share-cancel {
+  display: block; width: 100%;
+  background: var(--grey); border: 1px solid var(--line);
+  border-radius: 8px; padding: 12px;
+  font-family: 'LXGW WenKai TC', cursive;
+  font-size: 0.85rem; color: var(--ink-light);
+  cursor: pointer; transition: all 0.2s;
+}
+.share-cancel:hover { background: var(--sage-light); color: var(--ink); }
+
+/* ── SAVE CARD ── */
+/* 截圖用的卡片，螢幕上隱藏但 html2canvas 看得到 */
+#save-card {
+  position: fixed;
+  left: -9999px; top: 0;
+  width: 375px;
+  background: var(--surface);
+  padding: 40px 32px;
+  font-family: 'LXGW WenKai TC', cursive;
+  color: var(--ink);
+}
+.save-card-eyebrow {
+  font-size: 0.65rem; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--ink-light);
+  text-align: center; margin-bottom: 16px;
+}
+.save-card-icon {
+  display: block;
+  text-align: center; margin-bottom: 12px;
+}
+.save-card-icon img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+.save-card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem; font-weight: 300;
+  text-align: center; margin-bottom: 4px;
+}
+.save-card-tagline {
+  font-size: 0.78rem; color: var(--ink-light);
+  text-align: center; margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+.save-card-traits {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  justify-content: center; margin-bottom: 18px;
+}
+.save-card-trait {
+  border: 1px solid var(--line);
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 0.68rem; color: var(--ink-light);
+}
+.save-card-desc {
+  font-size: 0.82rem; line-height: 1.9;
+  color: var(--ink); margin-bottom: 24px;
+}
+.save-card-detail {
+  margin-bottom: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.save-card-detail-row {
+  margin-bottom: 12px;
+}
+.save-card-detail-label {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  color: var(--ink-light);
+  margin-bottom: 2px;
+}
+.save-card-detail-value {
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: var(--ink);
+  font-weight: 300;
+}
+.save-card-footer {
+  font-size: 0.65rem; color: var(--ink-light);
+  text-align: center; letter-spacing: 1px;
+  border-top: 1px solid var(--grey); padding-top: 14px;
+}
+
+/* ── RESULT ACTIONS (update) ── */
+.result-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 20px; justify-content: center;
+  animation: fadeUp 0.6s 0.5s ease both;
+}
+
+/* ── AUDIO CONTROL ── */
+.audio-btn {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(242,240,236,0.92);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  z-index: 500;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(64,78,59,0.1);
+}
+.audio-btn:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(64,78,59,0.15); }
+.audio-btn.muted { opacity: 0.45; }
+
+/* volume fade animation */
+@keyframes volumePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── PETAL ── */
+.petal { position:fixed; pointer-events:none; animation:petalFall linear forwards; z-index:200; font-size:1rem; }
+@keyframes petalFall { 0%{transform:translateY(-20px) rotate(0);opacity:1} 100%{transform:translateY(110vh) rotate(540deg);opacity:0} }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+@media(max-width:480px) {
+  .deco-line { display: none; }
+  .question-card, .start-card { padding: 28px 20px; }
+  .result-card { padding: 28px 20px; }
+  .audio-btn { bottom: 16px; right: 16px; }
+  .result-flower-icon img { width: 160px; height: 160px; }
+  .detail-row { font-size: 0.85rem; line-height: 1.9; }
+  .compat-section { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .compat-card { padding: 16px 12px; }
+  .compat-flower-name { font-size: 0.88rem; }
+  .compat-flower-img { width: 64px; height: 64px; }
+  .compat-note { font-size: 0.7rem; }
+}
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZQV7NGH95H"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZQV7NGH95H');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<span class="deco-line left"></span>
+<span class="deco-line right"></span>
+
+<!-- ── AUDIO ── -->
+<audio id="bgm" loop preload="auto">
+  <source src="audio/bgm.mp3" type="audio/mpeg">
+</audio>
+
+<!-- 音效靜音按鈕，固定在右下角 -->
+<button class="audio-btn" id="audio-btn" onclick="toggleMute()" title="開關音樂">
+  🎵
+</button>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eyebrow">花的人格測驗</div>
+    <h1>你是哪一種<br><em>鮮花花束</em></h1>
+    <p class="header-sub">買花與養花的方式，藏著你的個性</p>
+  </div>
+
+  <!-- START -->
+  <div id="start-screen">
+    <div class="start-card">
+      <span class="start-flower-icon">💐</span>
+      <h2>找到最能代表你的一束花</h2>
+      <p>沒有對錯，憑直覺選就好</p>
+      <button class="btn-primary" onclick="startQuiz()">開始測驗</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen">
+    <div class="progress-wrap">
+      <span class="progress-num" id="q-num">01 / 08</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+        <div class="progress-dot" id="prog-dot" style="left:0%"></div>
+      </div>
+    </div>
+    <div class="question-card" id="q-card">
+      <div class="q-number" id="q-label">Question 01</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-grid" id="opts"></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen">
+    <div class="result-reveal">
+      <div class="result-header">
+        <div class="result-eyebrow">你的花型人格</div>
+        <span class="result-flower-icon" id="r-icon"></span>
+        <div class="result-flower-name" id="r-name"></div>
+        <div class="result-flower-latin" id="r-latin"></div>
+        <div class="result-tagline" id="r-tagline"></div>
+      </div>
+
+      <div class="result-card" id="r-card">
+        <div class="result-accent-bar"></div>
+        <div class="traits-row" id="r-traits"></div>
+        <div class="result-desc" id="r-desc"></div>
+        <div class="result-detail-section">
+          <div class="detail-row">
+            <span class="detail-label">你的花語</span>
+            <span class="detail-value" id="r-strength"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">花的建議</span>
+            <span class="detail-value" id="r-blind"></span>
+          </div>
+        </div>
+
+        <!-- Compat Cards -->
+        <div class="compat-section">
+          <div class="compat-card compat-card-good">
+            <span class="compat-label">默契十足</span>
+            <div class="compat-flower-name" id="r-compat-good-name"></div>
+            <div class="compat-flower-img" id="r-compat-good-img"></div>
+            <div class="compat-note" id="r-compat-good-note"></div>
+          </div>
+          <div class="compat-card compat-card-hard">
+            <span class="compat-label">需要磨合</span>
+            <div class="compat-flower-name" id="r-compat-hard-name"></div>
+            <div class="compat-flower-img" id="r-compat-hard-img"></div>
+            <div class="compat-note" id="r-compat-hard-note"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-retry" onclick="startQuiz()">再測一次</button>
+        <button class="btn-save" onclick="saveCard()">儲存結果 ↓</button>
+        <button class="btn-share" onclick="openShare()">分享 ✿</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .app -->
+
+<!-- ── SHARE MODAL ── -->
+<div class="share-overlay" id="share-overlay" onclick="closeShare(event)">
+  <div class="share-sheet">
+    <div class="share-sheet-title">分享你的花束</div>
+    <div class="share-options">
+      <button class="share-opt" onclick="shareTo('line')">
+        <div class="share-opt-icon">💬</div>
+        <span class="share-opt-label">LINE</span>
+      </button>
+      <button class="share-opt" onclick="shareTo('ig')">
+        <div class="share-opt-icon">📷</div>
+        <span class="share-opt-label">Instagram</span>
+      </button>
+      <button class="share-opt" onclick="shareTo('fb')">
+        <div class="share-opt-icon">👤</div>
+        <span class="share-opt-label">Facebook</span>
+      </button>
+      <button class="share-opt" onclick="shareTo('copy')">
+        <div class="share-opt-icon">🔗</div>
+        <span class="share-opt-label">複製連結</span>
+      </button>
+    </div>
+    <button class="share-cancel" onclick="closeShare()">取消</button>
+  </div>
+</div>
+
+<!-- ── SAVE CARD（截圖用，螢幕上不顯示）── -->
+<div id="save-card">
+  <div class="save-card-eyebrow">花束人格測驗</div>
+  <span class="save-card-icon" id="sc-icon"></span>
+  <div class="save-card-name" id="sc-name"></div>
+  <div class="save-card-tagline" id="sc-tagline"></div>
+  <div class="save-card-traits" id="sc-traits"></div>
+  <div class="save-card-desc" id="sc-desc"></div>
+  <div class="save-card-detail">
+    <div class="save-card-detail-row">
+      <span class="save-card-detail-label">你的花語</span>
+      <span class="save-card-detail-value" id="sc-strength"></span>
+    </div>
+    <div class="save-card-detail-row">
+      <span class="save-card-detail-label">花的建議</span>
+      <span class="save-card-detail-value" id="sc-blind"></span>
+    </div>
+  </div>
+  <div class="save-card-footer">你是哪種花束？</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// 6 FLOWER PERSONALITIES
+// ─────────────────────────────────────────────
+const FLOWERS = {
+  cascade: {
+    id: 'cascade',
+    icon: 'assets/images/cascade.png',
+    name: '蝴蝶蘭瀑布花束',
+    latin: 'Phalaenopsis cascade bouquet',
+    tagline: '你對美的標準，從來不是別人能定義的',
+    traits: ['儀式感','優雅','完美主義','不將就'],
+    desc: `你買花很少衝動，不對的花寧可不買，等到對的出現再說。<strong>你對美有固執的堅持</strong>，看到一束搭配鬆散的花，會默默在心裡重新排列。\n\n對你來說，花不只是花，是一種生活態度的宣示。你不介意為對的東西多付一點，因為覺得值得。`,
+    strength: '不著急的人，終會遇見對的美',
+    blind: '偶爾讓自己享受一點「不完美也沒關係」',
+    compat: [
+      { name: '大地色混搭花束', type: 'good', note: '由你拿定主意，而他負責豐富細節' },
+      { name: '街邊買的非洲菊', type: 'hard', note: '你們對「夠不夠好」的標準差太多' }
+    ]
+  },
+  tulip: {
+    id: 'tulip',
+    icon: 'assets/images/tulip.png',
+    name: '鬱金香花束',
+    latin: 'Tulipa gesneriana bouquet',
+    tagline: '全力以赴，保鮮期自己決定',
+    traits: ['全力綻放','季節限定','熱情真實','活在當下'],
+    desc: `你看到喜歡的花，不會想太多，直接買了。<strong>你的熱情來得快、也來得真</strong>，沒有人比你更能在當下全力投入。\n\n但你也清楚，有些事你是三分鐘熱度。但你不覺得這是缺點，你只是比別人更誠實地面對自己的節奏。`,
+    strength: '鬱金香開花時從不保留，你也是',
+    blind: '花期有限才珍貴，但偶爾也試著讓美好的事延續久一點',
+    compat: [
+      { name: '街邊買的非洲菊', type: 'good', note: '一拍即合，你們都是當下說走就走的人' },
+      { name: '蝴蝶蘭瀑布花束', type: 'hard', note: '你的果斷和對方的慎重，節奏上需要互相等一下' }
+    ]
+  },
+  editorial: {
+    id: 'editorial',
+    icon: 'assets/images/editorial.png',
+    name: '大地色混搭花束',
+    latin: 'Mixed earth-tone bouquet',
+    tagline: '懂的人自然懂，不懂的你也不打算解釋',
+    traits: ['審美主張強','不隨波逐流','選材獨特','有自己的邏輯'],
+    desc: `你選的花材別人不一定看得懂，但你的理由從來都很充分。<strong>你有強烈的審美主張</strong>，不是為了顯示品味，而是因為你真的知道自己喜歡什麼。\n\n你不會特別解釋為什麼這束好，因為需要解釋的話，對方可能也不是那個懂的人。`,
+    strength: '你總是能在別人忽略的地方，看見一朵正在盛開的花',
+    blind: '不是每個人都需要懂你，但重要的人值得你敞開心胸',
+    compat: [
+      { name: '冰島罌粟花束', type: 'good', note: '你們懂彼此的特立獨行' },
+      { name: '街邊買的非洲菊', type: 'hard', note: '對方的隨性自在，有時讓你覺得少了一點講究' }
+    ]
+  },
+  poppy: {
+    id: 'poppy',
+    icon: 'assets/images/poppy.png',
+    name: '冰島罌粟花束',
+    latin: 'Papaver nudicaule',
+    tagline: '你就是獨一無二的存在',
+    traits: ['獨立','不依附','感性','喜歡獨處'],
+    desc: `<strong>你不需要群體來定義自己</strong>，一個人的狀態反而讓你更清楚自己是誰。\n\n你的存在感不靠數量，靠的是那種讓人看一眼就記住的氣質。需要對的容器，需要對的光線，但只要條件對了，你比任何一束花都更讓人難忘。`,
+    strength: '你像冰島罌粟，薄薄的花瓣透著光，輕盈但不脆弱',
+    blind: '找到讓你能好好發光的地方，比什麼都重要',
+    compat: [
+      { name: '大地色混搭花束', type: 'good', note: '你們彼此心有靈犀，無需言語' },
+      { name: '鬱金香花束', type: 'hard', note: '你需要安靜，對方帶來的是熱鬧' }
+    ]
+  },
+  wild: {
+    id: 'wild',
+    icon: 'assets/images/wild.png',
+    name: '田園風格花束',
+    latin: 'Wildflower garden bouquet',
+    tagline: '看起來隨意，但都是精心挑選的',
+    traits: ['自由隨性','不被定義','有想法','自然不做作'],
+    desc: `你的花束看起來像是隨手從田裡採來的，但認識你的人都知道沒那麼簡單。<strong>你有很清楚的審美，但從來不讓它變成束縛</strong>\n\n你不需要別人的認可來確認自己的選擇，但被懂的人看見的時候，心裡還是會有點開心。`,
+    strength: '野花不問花期，開在自己想開的地方',
+    blind: '「隨性」有時候只是「不想被定義」的保護色',
+    compat: [
+      { name: '街邊買的非洲菊', type: 'good', note: '都不在意規則，相處很自在' },
+      { name: '蝴蝶蘭瀑布花束', type: 'hard', note: '你喜歡隨興，對方凡事要到位，你們節奏不同' }
+    ]
+  },
+  rose: {
+    id: 'rose',
+    icon: 'assets/images/rose.png',
+    name: '鈔票玫瑰花束',
+    latin: 'Rosa × money bouquet',
+    tagline: '經典至上，有錢花更重要',
+    traits: ['務實主義','不糾結','直接','效益優先'],
+    desc: `你不是不懂美，你只是覺得<strong>實用的東西才是真的好</strong>。玫瑰是最經典的花，錢是最實用的禮物，兩個放在一起有什麼問題嗎？\n\n你做決定很少糾結，因為你有一套很清楚的邏輯：值不值得、划不划算、開不開心。想太多是浪費時間，做就對了。`,
+    strength: '玫瑰從來不靠浪漫活著，它需要的是實實在在的照料',
+    blind: '有時候太直接，總讓人覺得少了一點點溫度',
+    compat: [
+      { name: '鬱金香花束', type: 'good', note: '都是行動派，不廢話' },
+      { name: '冰島罌粟花束', type: 'hard', note: '對方需要被細細品味，而你沒有那個耐心' }
+    ]
+  },
+  market: {
+    id: 'market',
+    icon: 'assets/images/market.png',
+    name: '街邊買的非洲菊',
+    latin: 'Gerbera jamesonii street bouquet',
+    tagline: '不在意風格，只在意快樂',
+    traits: ['情感驅動','不分析','直接快樂','真誠'],
+    desc: `你買花不需要理由。路過看到、顏色看起來很舒心，就買了。<strong>你不分析「這束搭不搭」</strong>，你只知道拿起來那一刻感覺對就夠了。\n\n你的快樂不需要被品味認證！`,
+    strength: '非洲菊放在哪裡，哪裡就是晴天',
+    blind: '衝動沒有不好，只是有些值得的人和事，需要細細品味',
+    compat: [
+      { name: '鈔票玫瑰花束', type: 'good', note: '你們都不想太多，開心最重要' },
+      { name: '蝴蝶蘭瀑布花束', type: 'hard', note: '對方的「不對就不買」讓你覺得太累' }
+    ]
+  }
+};
+
+// ─────────────────────────────────────────────
+// 8 QUESTIONS  (每個選項帶 flowerKey 權重)
+// ─────────────────────────────────────────────
+const QUESTIONS = [
+  {
+    text: '你喜歡什麼樣的花？',
+    opts: [
+      { text: '花型完整、每個角度都耐看，愈看愈美',
+        weights: { cascade:3, rose:1 } },
+      { text: '花朵碩大、色彩鮮豔，遠遠的就能看見',
+        weights: { market:3, tulip:1 } },
+      { text: '小小的花朵乍看不起眼，但靠近看細節滿滿',
+        weights: { editorial:3, poppy:1 } },
+      { text: '長得奇特、別人不一定懂，但你覺得很有趣',
+        weights: { wild:3, poppy:1 } },
+    ]
+  },
+  {
+    text: '花束放在家裡，你最在意什麼？',
+    opts: [
+      { text: '插得夠不夠整齊、整體比例對不對',
+        weights: { cascade:3, rose:1 } },
+      { text: '顏色跟空間氛圍搭不搭',
+        weights: { editorial:2, poppy:2 } },
+      { text: '花苞有沒有慢慢打開',
+        weights: { tulip:2, wild:2 } },
+      { text: '開不開心，沒想那麼多',
+        weights: { market:3, tulip:1 } },
+    ]
+  },
+  {
+    text: '你喜歡把花放在家裡的哪一處？',
+    opts: [
+      { text: '玄關或餐桌，一進門就能看到',
+        weights: { cascade:2, rose:2 } },
+      { text: '窗邊，喜歡陽光灑落的風景',
+        weights: { poppy:3, wild:1 } },
+      { text: '書桌旁，抬頭就能看見',
+        weights: { editorial:2, poppy:2 } },
+      { text: '隨手放，每次都放不同的角落',
+        weights: { market:3, tulip:1 } },
+    ]
+  },
+  {
+    text: '朋友送花給你，通常都選什麼樣的配色？',
+    opts: [
+      { text: '粉嫩夢幻，對方覺得你喜歡浪漫',
+        weights: { tulip:2, cascade:2 } },
+      { text: '乾淨單色，對方知道你喜歡簡單',
+        weights: { rose:2, cascade:1 } },
+      { text: '大地色霧感，對方覺得你很有品味',
+        weights: { editorial:3, wild:1 } },
+      { text: '什麼顏色都有過，對方其實不太確定你喜歡什麼',
+        weights: { market:2, wild:2 } },
+    ]
+  },
+  {
+    text: '你都拿什麼樣的花瓶插花？',
+    opts: [
+      { text: '線條俐落的透明玻璃瓶，花的姿態一覽無遺',
+        weights: { cascade:3, rose:1 } },
+      { text: '隨手拿的杯子或酒瓶，能插花就好',
+        weights: { market:3, tulip:1 } },
+      { text: '手感粗獷的陶器，有點 wabi-sabi 的味道',
+        weights: { editorial:2, wild:2 } },
+      { text: '細口窄瓶，只放得下一兩支就夠了',
+        weights: { poppy:3, wild:1 } },
+    ]
+  },
+  {
+    text: '送花給重要的人，你會選？',
+    opts: [
+      { text: '精心挑選，就連包裝也要完美搭配',
+        weights: { cascade:3, editorial:1 } },
+      { text: '大把的、熱鬧的，看起來很有分量',
+        weights: { tulip:2, market:2 } },
+      { text: '不常見但有故事的品種',
+        weights: { editorial:2, poppy:2 } },
+      { text: '實惠又好看，CP 值優先',
+        weights: { rose:4, market:1 } },
+    ]
+  },
+  {
+    text: '你買花通常是什麼狀態？',
+    opts: [
+      { text: '有計畫，知道要買什麼才出門',
+        weights: { cascade:2, rose:2 } },
+      { text: '看到喜歡的當下直接拿',
+        weights: { tulip:2, market:2 } },
+      { text: '花季到了，特別跑去買自己喜歡的花',
+        weights: { poppy:3, editorial:1 } },
+      { text: '不一定買花，有時候帶回來的是一把草甚至是樹枝',
+        weights: { wild:3, tulip:1 } },
+    ]
+  },
+  {
+    text: '你覺得花最美的時刻是？',
+    opts: [
+      { text: '剛買回來、狀態最完整的時候',
+        weights: { cascade:3, rose:1 } },
+      { text: '盛開最大朵的那天',
+        weights: { tulip:2, market:2 } },
+      { text: '花苞慢慢打開的過程',
+        weights: { editorial:2, poppy:2 } },
+      { text: '凋謝前最後的姿態',
+        weights: { wild:2, poppy:2 } },
+    ]
+  }
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let currentQ = 0;
+let scores = { cascade:0, tulip:0, editorial:0, poppy:0, wild:0, rose:0, market:0 };
+let answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// shuffle options order each time
+let shuffledOpts = [];
+
+function startQuiz() {
+  currentQ = 0;
+  scores = { cascade:0, tulip:0, editorial:0, poppy:0, wild:0, rose:0, market:0 };
+  answered = false;
+  shuffledOpts = QUESTIONS.map(q => shuffle(q.opts));
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.querySelector('.header').style.display = '';
+
+  // GA4：測驗開始
+  gtag('event', 'quiz_start', { event_category: 'quiz' });
+
+  startBgm();
+  renderQ();
+}
+
+function renderQ() {
+  answered = false;
+  const q = QUESTIONS[currentQ];
+  const opts = shuffledOpts[currentQ];
+
+  const n = String(currentQ+1).padStart(2,'0');
+  document.getElementById('q-num').textContent = `${n} / 08`;
+  document.getElementById('q-label').textContent = `Question ${n}`;
+  document.getElementById('q-text').textContent = q.text;
+
+  const pct = (currentQ / 8) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-dot').style.left = pct + '%';
+
+  const grid = document.getElementById('opts');
+  const labels = ['A','B','C','D'];
+  grid.innerHTML = opts.map((o,i) => `
+    <button class="opt-btn" onclick="pick(${i}, this)">
+      <span class="opt-letter">${labels[i]}</span>
+      <span class="opt-text">${o.text}</span>
+    </button>
+  `).join('');
+
+  // re-animate card
+  const card = document.getElementById('q-card');
+  card.style.animation = 'none'; card.offsetHeight;
+  card.style.animation = 'slideIn 0.45s ease both';
+}
+
+function pick(idx, btn) {
+  if (answered) return;
+  answered = true;
+
+  const opt = shuffledOpts[currentQ][idx];
+  Object.entries(opt.weights).forEach(([k, v]) => { scores[k] = (scores[k] || 0) + v; });
+
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
+  btn.classList.add('chosen');
+
+
+  setTimeout(() => {
+    // 先把選項容器清空，確保舊按鈕連同 chosen class 一起消滅
+    document.getElementById('opts').innerHTML = '';
+    currentQ++;
+    if (currentQ < 8) renderQ();
+    else showResult();
+  }, 500);
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+  document.querySelector('.header').style.display = 'none';
+
+  const winner = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+  const f = FLOWERS[winner];
+
+  document.getElementById('r-icon').innerHTML = `<img src="${f.icon}" alt="${f.name}">`;
+  document.getElementById('r-name').textContent = f.name;
+  document.getElementById('r-latin').textContent = f.latin;
+  document.getElementById('r-tagline').textContent = f.tagline;
+
+  document.getElementById('r-traits').innerHTML =
+    f.traits.map(t => `<span class="trait-tag">${t}</span>`).join('');
+
+  document.getElementById('r-desc').innerHTML =
+    f.desc.replace(/\n/g,'<br>');
+
+  document.getElementById('r-strength').textContent = f.strength;
+  document.getElementById('r-blind').textContent = f.blind;
+
+  const good = f.compat.find(c => c.type === 'good');
+  const hard = f.compat.find(c => c.type === 'hard');
+  if (good) {
+    const gf = Object.values(FLOWERS).find(fl => fl.name === good.name);
+    document.getElementById('r-compat-good-name').textContent = good.name;
+    document.getElementById('r-compat-good-img').innerHTML = gf ? `<img src="${gf.icon}" alt="${good.name}">` : '';
+    document.getElementById('r-compat-good-note').textContent = good.note;
+  }
+  if (hard) {
+    const hf = Object.values(FLOWERS).find(fl => fl.name === hard.name);
+    document.getElementById('r-compat-hard-name').textContent = hard.name;
+    document.getElementById('r-compat-hard-img').innerHTML = hf ? `<img src="${hf.icon}" alt="${hard.name}">` : '';
+    document.getElementById('r-compat-hard-note').textContent = hard.note;
+  }
+
+  const card = document.getElementById('r-card');
+  card.className = `result-card ${winner}`;
+
+  document.getElementById('result-screen').scrollIntoView({ behavior: 'smooth' });
+
+  // GA4：測驗完成 + 結果花束
+  gtag('event', 'quiz_complete', {
+    event_category: 'quiz',
+    result_bouquet: winner,           // e.g. 'cascade'
+    result_name: f.name,              // e.g. '蝴蝶蘭瀑布花束'
+  });
+
+
+  spawnPetals();
+}
+
+function spawnPetals() {
+  const icons = ['🍀','🌿','💐','🌷','🌼'];
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.textContent = icons[Math.floor(Math.random()*icons.length)];
+      p.style.left = Math.random()*100+'vw';
+      p.style.top = '-20px';
+      p.style.fontSize = (0.7 + Math.random()*0.7)+'rem';
+      p.style.animationDuration = (2+Math.random()*3)+'s';
+      p.style.animationDelay = (Math.random()*1.5)+'s';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(), 6000);
+    }, i * 90);
+  }
+}
+
+// ─────────────────────────────────────────────
+// SHARE & SAVE
+// ─────────────────────────────────────────────
+let _shareText = '';
+let _shareUrl  = '';
+
+function openShare() {
+  const name    = document.getElementById('r-name').textContent;
+  const tagline = document.getElementById('r-tagline').textContent;
+  _shareText = `🌿 花束人格測驗\n我是「${name}」——${tagline}\n\n你是哪種花束？`;
+  _shareUrl  = window.location.href;
+
+  // GA4
+  gtag('event', 'share_open', { event_category: 'quiz', result_name: name });
+
+  // 手機優先用原生分享
+  if (navigator.share) {
+    navigator.share({ title: '你是哪種花束？', text: _shareText, url: _shareUrl })
+      .catch(() => {}); // 使用者取消不報錯
+    return;
+  }
+  // 桌機 → 自訂 modal
+  document.getElementById('share-overlay').classList.add('open');
+}
+
+function closeShare(e) {
+  // 點 overlay 背景關閉，點 sheet 本身不關
+  if (e && e.target !== document.getElementById('share-overlay')) return;
+  document.getElementById('share-overlay').classList.remove('open');
+}
+
+function shareTo(platform) {
+  const encoded = encodeURIComponent(_shareText + '\n' + _shareUrl);
+  const urls = {
+    line: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(_shareUrl)}&text=${encodeURIComponent(_shareText)}`,
+    ig:   null, // IG 不支援網頁直接分享，改為複製後提示
+    fb:   `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(_shareUrl)}&quote=${encodeURIComponent(_shareText)}`,
+    copy: null,
+  };
+
+  if (platform === 'copy' || platform === 'ig') {
+    navigator.clipboard.writeText(_shareText + '\n' + _shareUrl).then(() => {
+      alert(platform === 'ig'
+        ? '已複製！開啟 Instagram，貼到限動或貼文就好 🌸'
+        : '連結已複製到剪貼簿！');
+    });
+  } else {
+    window.open(urls[platform], '_blank', 'width=600,height=500');
+  }
+
+  gtag('event', 'share', { event_category: 'quiz', platform });
+  document.getElementById('share-overlay').classList.remove('open');
+}
+
+async function saveCard() {
+  const name    = document.getElementById('r-name').textContent;
+  const tagline = document.getElementById('r-tagline').textContent;
+  const icon    = document.getElementById('r-icon').innerHTML;
+  const desc    = document.getElementById('r-desc').innerHTML;
+  const traits  = document.getElementById('r-traits').innerHTML;
+
+  // 填入 save-card
+  document.getElementById('sc-icon').innerHTML       = icon;
+  document.getElementById('sc-name').textContent    = name;
+  document.getElementById('sc-tagline').textContent = tagline;
+  document.getElementById('sc-traits').innerHTML    = traits
+    .replace(/trait-tag/g, 'save-card-trait');
+  document.getElementById('sc-desc').innerHTML      = desc;
+  document.getElementById('sc-strength').textContent = document.getElementById('r-strength').textContent;
+  document.getElementById('sc-blind').textContent    = document.getElementById('r-blind').textContent;
+
+  // 暫時移到畫面內讓 html2canvas 拍得到
+  const card = document.getElementById('save-card');
+  card.style.left = '-375px'; // 螢幕外但不是 display:none
+
+  try {
+    const canvas = await html2canvas(card, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#faf7f2',
+    });
+
+    const link = document.createElement('a');
+    link.download = `花束人格_${name}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    gtag('event', 'save_card', { event_category: 'quiz', result_name: name });
+  } catch(e) {
+    alert('截圖失敗，請手動截圖儲存 🌸');
+  }
+
+  card.style.left = '-9999px';
+}
+const bgm      = document.getElementById('bgm');
+const audioBtn = document.getElementById('audio-btn');
+
+let isMuted = false;
+let bgmStarted = false;
+
+bgm.volume = 0.35;
+
+function startBgm() {
+  if (bgmStarted) return;
+  bgmStarted = true;
+  if (!isMuted) {
+    bgm.play().catch(() => {
+      // 瀏覽器 autoplay 政策：使用者互動後才能播，第一次點按鈕就會觸發
+    });
+  }
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  bgm.muted = isMuted;
+  audioBtn.textContent = isMuted ? '🔇' : '🎵';
+  audioBtn.classList.toggle('muted', isMuted);
+
+  // 如果取消靜音且 bgm 還沒開始，嘗試播放
+  if (!isMuted && bgmStarted && bgm.paused) {
+    bgm.play().catch(() => {});
+  }
+}
+
+</script>
+</body>
+</html>
