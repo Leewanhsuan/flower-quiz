@@ -1238,7 +1238,7 @@ let _shareUrl  = '';
 function openShare() {
   const name    = document.getElementById('r-name').textContent;
   const tagline = document.getElementById('r-tagline').textContent;
-  _shareText = `🌿 花束人格測驗\n我是「${name}」——${tagline}\n\n你是哪種花束？`;
+  _shareText = `💐 花束人格測驗\n我是「${name}」——${tagline}\n\n快來測看看你是哪種花束？`;
   _shareUrl  = window.location.href;
 
   // GA4
@@ -1300,6 +1300,13 @@ async function saveCard() {
   document.getElementById('sc-strength').textContent = document.getElementById('r-strength').textContent;
   document.getElementById('sc-blind').textContent    = document.getElementById('r-blind').textContent;
 
+  // iOS Safari 會擋 async 後的 window.open，必須在 await 前同步開好
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  let newTab = null;
+  if (isIOS) {
+    newTab = window.open('about:blank');
+  }
+
   // 暫時移到畫面內讓 html2canvas 拍得到
   const card = document.getElementById('save-card');
   card.style.left = '-375px'; // 螢幕外但不是 display:none
@@ -1311,23 +1318,16 @@ async function saveCard() {
       backgroundColor: '#faf7f2',
     });
 
-    // iOS Safari 不支援 data URL download，改用 Blob
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS) {
-      // iOS: 開新分頁讓使用者長按儲存
+      // iOS: 在預先開好的分頁中顯示圖片，使用者長按儲存
       const imgData = canvas.toDataURL('image/png');
-      const newTab = window.open();
       if (newTab) {
-        newTab.document.write(`<img src="${imgData}" style="width:100%;max-width:375px">`);
-        newTab.document.title = `花束人格_${name}`;
-      } else {
-        // popup 被擋 → fallback
-        const link = document.createElement('a');
-        link.href = imgData;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        newTab.document.write(
+          `<html><head><title>花束人格_${name}</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
+          `<body style="margin:0;display:flex;justify-content:center;background:#faf7f2">` +
+          `<img src="${imgData}" style="width:100%;max-width:375px"></body></html>`
+        );
+        newTab.document.close();
       }
     } else {
       canvas.toBlob(function(blob) {
@@ -1344,6 +1344,7 @@ async function saveCard() {
 
     gtag('event', 'save_card', { event_category: 'quiz', result_name: name });
   } catch(e) {
+    if (newTab) newTab.close();
     alert('截圖失敗，請手動截圖儲存 🌸');
   }
 
