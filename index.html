@@ -262,7 +262,9 @@ body {
   flex-shrink: 0;
   margin-top: 1px;
 }
-.opt-btn:hover { background: var(--sage-light); border-color: var(--sage); }
+@media (hover: hover) {
+  .opt-btn:hover { background: var(--sage-light); border-color: var(--sage); }
+}
 .opt-btn.chosen { background: var(--sage); color: #fff; border-color: var(--sage); }
 .opt-btn.chosen .opt-letter { opacity: 0.8; }
 .opt-btn.disabled { pointer-events: none; opacity: 0.5; }
@@ -1309,10 +1311,36 @@ async function saveCard() {
       backgroundColor: '#faf7f2',
     });
 
-    const link = document.createElement('a');
-    link.download = `花束人格_${name}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    // iOS Safari 不支援 data URL download，改用 Blob
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      // iOS: 開新分頁讓使用者長按儲存
+      const imgData = canvas.toDataURL('image/png');
+      const newTab = window.open();
+      if (newTab) {
+        newTab.document.write(`<img src="${imgData}" style="width:100%;max-width:375px">`);
+        newTab.document.title = `花束人格_${name}`;
+      } else {
+        // popup 被擋 → fallback
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } else {
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `花束人格_${name}.png`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    }
 
     gtag('event', 'save_card', { event_category: 'quiz', result_name: name });
   } catch(e) {
